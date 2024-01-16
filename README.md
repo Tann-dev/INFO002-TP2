@@ -2,7 +2,7 @@
 
 >Antoine DEPOISIER & Jules FINCK
 
-## Question 1
+### Question 1
 
 Voici la commande utilisée pour encoder un message dans une image :
 
@@ -28,7 +28,7 @@ Test avec l'image précédemment crée
 python main.py unhide img\chablais-coucou.png 6
 ```
 
-## Question 2
+### Question 2
 
 Pour générer nos couple de clé publique/clé privé, il faut utiliser la commande :
 
@@ -54,3 +54,16 @@ python main.py verify <msg>
 
 En lançant cette commande, le programme va vérifier si le contenu de la signature dans `signature.bin` est le même que le message  donnée en paramètre.
 
+### Question 3
+
+On peut générer un diplôme sans données cachées pour le moment, avec la commande :
+
+```shell
+python main.py test_degree <input image> <output image> <student_name> <mean_student>
+```
+
+Par exemple, avec cette commande, le dipolôme s'appelant `diplome-test.png` est généré.
+
+```shell
+python main.py test_degree img/diplome-BG.png test.png "Jules Finck" 18.5
+```

@@ -70,8 +70,43 @@ def verify(msg):
         print("The signature is valid.")
     except (ValueError, TypeError):
         print("The signature is not valid.")
-    
 
+def add_degree_label(img):
+    msg = "Diplôme"
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype("font.ttf", 70)
+    _, _, w, h = draw.textbbox((0, 0), msg, font=font)
+    draw.text(((img.width - w) / 2, 150), msg, "black", font)
+
+def add_degree_name(img):
+    msg = "Master Bacon Grill"
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype("font.ttf", 52)
+    _, _, w, h = draw.textbbox((0, 0), msg, font=font)
+    draw.text(((img.width - w) / 2, 240), msg, "black", font)
+
+def add_candidate_name(img, candidate_name):
+    msg = candidate_name + " a réussi la formation"
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype("font2.otf", 36)
+    _, _, w, h = draw.textbbox((0, 0), msg, font=font)
+    draw.text(((img.width - w) / 2, 320), msg, "black", font)
+
+def add_grade_mean(img, grade_mean):
+    msg = "avec une moyenne de  " + grade_mean
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype("font2.otf", 36)
+    _, _, w, h = draw.textbbox((0, 0), msg, font=font)
+    draw.text(((img.width - w) / 2, 380), msg, "black", font)
+
+def create_degree(filename, output, student_name, mean_student):
+    img = Image.open(filename)  # ouverture de l'image contenue dans un fichier
+    add_degree_label(img)
+    add_degree_name(img)
+    add_candidate_name(img, student_name)
+    add_grade_mean(img, mean_student)
+    img.save(output)            # sauvegarde de l'image obtenue dans un autre fichier
+    
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
@@ -106,4 +141,9 @@ if __name__ == "__main__":
             print("Usage: python main.py verify <msg>")
             sys.exit(1)
         msg = sys.argv[2]
-        dec_msg = verify(msg)
+        dec_msg = verify(msg.encode())
+    elif sys.argv[1] == "test_degree":
+        if len(sys.argv) != 6:
+            print("Usage: python main.py test_degree <input image> <output image> <student_name> <mean_student>")
+        create_degree(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+
