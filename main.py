@@ -2,42 +2,46 @@ from PIL import Image, ImageFont, ImageDraw
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
 from Crypto.Signature import pkcs1_15
+from datetime import date
 
-def hide(img, msg):
-    pixels = img.load()             # tableau des pixels
-    w, h = img.size                 # dimensions de l'image
-    i = 0                           # indice dans le message
-    bi = 0                           # indice dans le bit du message
+def hide(img, sign):
+    if img.mode != "RGB":
+        img = img.convert("RGB")
+    pixels = img.load()
+    w, h = img.size
+    i = 0
+    bi = 0
     for y in range(h):
         for x in range(w):
-            r, g, b = pixels[x, y]  # on récupère les composantes RGB du pixel (x,y)
-            bit = (ord(msg[i]) >> bi) & 1
+            r, g, b = pixels[x, y]
+            bit = (sign[i] >> bi) & 1
             r = r & 0xfe | bit
             pixels[x, y] = (r, g, b)
             bi += 1
             if bi == 8:
                 bi = 0
                 i += 1
-                if i == len(msg):
+                if i == len(sign):
                     return img
 
 def unhide(img, size):
-    pixels = img.load()             # tableau des pixels
-    w, h = img.size                 # dimensions de l'image
-    msg = [0 for i in range(size)]
-    i = 0                           # indice dans le message
-    bi = 0                           # indice dans le bit du message
+    pixels = img.load()
+    w, h = img.size
+    sign = bytearray(size)
+    i = 0
+    bi = 0
     for y in range(h):
         for x in range(w):
-            r, g, b = pixels[x, y]  # on récupère les composantes RGB du pixel (x,y)
+            r, g, b = pixels[x, y]
             bit = r & 1
-            msg[i] |= bit << bi
+            sign[i] = sign[i] | (bit << bi)
             bi += 1
             if bi == 8:
                 bi = 0
                 i += 1
                 if i == size:
-                    return msg
+                    return sign
+            
 
 def generate_key():
     key = RSA.generate(4096)
@@ -56,14 +60,9 @@ def signMessage(msg):
     hash = SHA256.new(msg)
     private_key = RSA.import_key(open("private_key.pem").read())
     signature = pkcs1_15.new(private_key).sign(hash)
-    output_file = open("signature.pkcs", "wb")
-    output_file.write(signature)
-    output_file.close()
+    return signature
 
-def verify(msg):
-    file_in = open("signature.pkcs", "rb")
-    signature = file_in.read()
-    file_in.close()
+def verify(msg, signature):
     public_key = RSA.import_key(open("public_key.pem").read())
     try:
         pkcs1_15.new(public_key).verify(SHA256.new(msg), signature)
@@ -105,7 +104,16 @@ def create_degree(filename, output, student_name, mean_student):
     add_degree_name(img)
     add_candidate_name(img, student_name)
     add_grade_mean(img, mean_student)
+    now = date.today()
+    msg = str(now) + student_name + mean_student
+    sign = signMessage(msg.encode())
+    img = hide(img, sign)
     img.save(output)            # sauvegarde de l'image obtenue dans un autre fichier
+
+def verify_degree(filename, msg, size):
+    img = Image.open(filename)
+    sign = unhide(img, size)
+    verify(msg.encode(), sign)
     
 if __name__ == "__main__":
     import sys
@@ -142,8 +150,12 @@ if __name__ == "__main__":
             sys.exit(1)
         msg = sys.argv[2]
         dec_msg = verify(msg.encode())
-    elif sys.argv[1] == "test_degree":
+    elif sys.argv[1] == "make_degree":
         if len(sys.argv) != 6:
             print("Usage: python main.py test_degree <input image> <output image> <student_name> <mean_student>")
         create_degree(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+    elif sys.argv[1] == "verify_degree":
+        if len(sys.argv) != 5:
+            print("Usage: python main.py verify_degree <input image> <msg> <size>")
+        verify_degree(sys.argv[2], sys.argv[3], int(sys.argv[4]))
 
