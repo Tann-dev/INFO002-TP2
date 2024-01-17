@@ -2,6 +2,8 @@
 
 >Antoine DEPOISIER & Jules FINCK
 
+>Lien Github : https://github.com/Tann-dev/INFO002-TP2
+
 ### Question 1
 
 Voici la commande utilisée pour encoder un message dans une image :
@@ -59,11 +61,45 @@ En lançant cette commande, le programme va vérifier si le contenu de la signat
 On peut générer un diplôme sans données cachées pour le moment, avec la commande :
 
 ```shell
-python main.py test_degree <input image> <output image> <student_name> <mean_student>
+python main.py make_degree <input image> <output image> <student_name> <mean_student>
 ```
 
 Par exemple, avec cette commande, le dipolôme s'appelant `diplome-test.png` est généré.
 
 ```shell
-python main.py test_degree img/diplome-BG.png test.png "Jules Finck" 18.5
+python main.py make_degree img/diplome-BG.png test.png "Jules Finck" 18.5
 ```
+
+### Question 4
+
+Dans le diplome nous cachons une signature pour le nom de l'étudiant, sa note et la date d'émission du diplôme.
+
+Cette signature sert à être sûr que les données du diplôme n'ont pas été trafiqué.
+
+```shell
+python main.py make_degree <input image> <output image> <student_name> <mean_student>
+```
+
+### Question 5
+
+Voici la commande permettant de vérifier le diplôme :
+
+```shell
+python main.py verify_degree <input image> <message> <hash_size>
+```
+
+Si on prend l'exemple de : 
+
+```shell
+python main.py make_degree img/diplome-BG.png test.png "Jules Finck" 18.5
+```
+
+et que l'on vérifie le diplôme avec la commande : 
+
+```shell
+python main.py verify_degree test.png "2024-01-17Jules Finck18.5" 512
+```
+
+Le programme va nous dire si les données du diplôme sont valides.
+
+Le message que l'on donne en entrée est de la former `<date><student_name><mean_student>`, avec une date au format `YYYY-MM-DD`.

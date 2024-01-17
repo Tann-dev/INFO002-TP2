@@ -3,8 +3,12 @@ from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
 from Crypto.Signature import pkcs1_15
 from datetime import date
+import locale
+
+locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
 
 def hide(img, sign):
+    print("Taile de la signature : " + str(len(sign)))
     if img.mode != "RGB":
         img = img.convert("RGB")
     pixels = img.load()
@@ -98,12 +102,20 @@ def add_grade_mean(img, grade_mean):
     _, _, w, h = draw.textbbox((0, 0), msg, font=font)
     draw.text(((img.width - w) / 2, 380), msg, "black", font)
 
+def add_emission_date(img):
+    msg = "Diplôme émis le  " + date.today().strftime('%A %d %B %Y')
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype("font3.otf", 28)
+    _, _, w, h = draw.textbbox((0, 0), msg, font=font)
+    draw.text(((img.width - w) /4 * 3, 450), msg, "black", font)
+
 def create_degree(filename, output, student_name, mean_student):
     img = Image.open(filename)  # ouverture de l'image contenue dans un fichier
     add_degree_label(img)
     add_degree_name(img)
     add_candidate_name(img, student_name)
     add_grade_mean(img, mean_student)
+    add_emission_date(img)
     now = date.today()
     msg = str(now) + student_name + mean_student
     sign = signMessage(msg.encode())
